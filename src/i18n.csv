@@ -1,0 +1,6 @@
+Language,en,es,ca,
+decsep,",",.,.,
+thousep,.,",",",",
+numregex,"^[\+\-]?[0-9\,]*\.?[0-9]*$","^[\+\-]?[0-9\,]*\.?[0-9]*$","^[\+\-]?[0-9\,]*\.?[0-9]*$",
+Hello,Hello,Hola,Hola,
+Hello World,Hello World,¡Hola!,Hola mòn!,
