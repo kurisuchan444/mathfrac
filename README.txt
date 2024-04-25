@@ -1,11 +1,6 @@
 Initial installation
 ====================
-Follows https://www.robinwieruch.de/minimal-react-webpack-babel-setup/
-except for babel itself, where I followed instructions from the babel website.
-
-Use this boilerplate:
-- mkdir mathfrac
-- https://github.com/kurisuchan444/mathfrac.git
+- git clone https://github.com/kurisuchan444/mathfrac.git
 - cd mathfrac
 - npm install
 - npm start
