@@ -1,11 +1,14 @@
 const webpack = require('webpack');
 const HtmlWebPackPlugin = require("html-webpack-plugin");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+//const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const devMode = process.env.NODE_ENV !== 'production'
 const path = require('path')
 
 module.exports = {
-  entry: './src/index.js',
+  entry: [
+    './src/index.js',
+    './src/style.css'
+  ],
   module: {
     rules: [
       {
@@ -28,14 +31,12 @@ module.exports = {
           }
         ]
       },
-      //{
-      //  test: /\.css$/,
-      //  use: [MiniCssExtractPlugin.loader, "css-loader"]
-      //}
       {
         test: /\.css$/,
         use: [
-          devMode ? 'style-loader' : MiniCssExtractPlugin.loader,
+          //devMode ? 'style-loader' : MiniCssExtractPlugin.loader,
+          //MiniCssExtractPlugin.loader,
+          'style-loader',
           'css-loader'
         ],
       },
@@ -75,23 +76,20 @@ module.exports = {
       template: "./src/index.html",
       filename: "./index.html",
       inject: false
-    }),
+    })//,
     //new MiniCssExtractPlugin({
-    //  filename: "[name].css",
-    //  chunkFilename: "[id].css"
-    //})
-    new MiniCssExtractPlugin({
       // Options similar to the same options in webpackOptions.output
       // both options are optional
-      filename: devMode ? '[name].css' : '[name].[hash].css',
-      chunkFilename: devMode ? '[id].css' : '[id].[hash].css',
-    })
+      //filename: devMode ? 'style.css' : 'style.[hash].css'//,
+      //filename: 'style.css'
+      //chunkFilename: devMode ? '[id].css' : '[id].[hash].css'
+    //})
   ],
   devServer: {
     contentBase: './dist',
     hot: true,
     inline: true,
-    host: '192.168.1.126',
+    //host: '192.168.1.126',
     port: 8000
     
   }

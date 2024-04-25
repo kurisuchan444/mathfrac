@@ -92,18 +92,9 @@ class NavBar extends React.Component {
       <div className={classes.root}>
         <AppBar position="absolute" className={classes.appBar}>
           <Toolbar className={classes.toolbar}>
-            <IconButton className={classes.menuButton} color="inherit" aria-label="menu">
-              <MenuIcon />
-            </IconButton>
             <Typography variant="h6" color="inherit">
               MathFrac v0.1
             </Typography>
-            <IconButton 
-              aria-owns={anchorEl ? 'menu-appbar' : null}
-              aria-haspopup="true"
-              color="inherit">
-              <AccountCircle />
-            </IconButton>
           </Toolbar>
         </AppBar>
         <div className={classes.content}>
@@ -122,7 +113,6 @@ ReactDOM.render(
         <CssBaseline />
         <NavBar />
       </MuiThemeProvider>
-      <DevTools />
     </div>
   </Provider>,
   document.getElementById('app')

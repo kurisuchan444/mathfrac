@@ -5,7 +5,8 @@ import { withStyles } from '@material-ui/core/styles';
 import SketchPad from './SketchPad';
 import ParamsGrid from './ParamsGrid';
 import { TOOL_PENCIL, TOOL_LINE, TOOL_RECTANGLE, TOOL_ELLIPSE } from './SketchPadTools';
-import { Select, FormControl, FormControlLabel, Checkbox, InputLabel, MenuItem, Button, IconButton, Grid, Typography, Tooltip } from '@material-ui/core';
+import { Select, FormControl, FormControlLabel, Checkbox, InputLabel, Switch,
+  MenuItem, Button, IconButton, Grid, Typography, Tooltip } from '@material-ui/core';
 import ClearIcon from '@material-ui/icons/Clear';
 import EditIcon from '@material-ui/icons/Edit';
 import ZoomIn from '@material-ui/icons/ZoomIn';
@@ -14,8 +15,7 @@ import FwdIcon from '@material-ui/icons/ArrowForwardIos';
 import BackIcon from '@material-ui/icons/ArrowBackIos';
 import RectIcon from '@material-ui/icons/Crop32';
 import CircleIcon from '@material-ui/icons/PanoramaFishEye';
-
-import ReactDataGrid from 'react-data-grid';
+import AddIcon from '@material-ui/icons/Add';
 
 const styles = theme => ({
   root: {
@@ -25,8 +25,9 @@ const styles = theme => ({
   },
   formControl: {
     margin: theme.spacing.unit,
-    minWidth: 120
-  }
+    minWidth: 120,
+    display: 'flex',
+    flexDirection: 'row'  }
 });
 
 @inject('store')
@@ -44,7 +45,8 @@ export default class MathFracPad extends Component {
       items: [],
       showCoordinatesLeft: false,
       showCoordinatesRight: false,
-      useColors: false
+      useColors: false,
+      showGrid: false
     }
     this.colors = [
       [0, 0, 0],
@@ -93,15 +95,56 @@ export default class MathFracPad extends Component {
     const sctx = src.getContext('2d');
     const w = this.props.width;
     const h = this.props.height;
+    const s = 10;
+    const b = 50;
     sctx.clearRect(0, 0, w, h);
-    sctx.fillRect(10, 10, 50, h-2*10);
-    sctx.fillRect(10, h-10-50, w-2*10, 50);
-    sctx.fillRect(w-50-10, 10, 50, 50);
+    sctx.fillRect(s, s, w-2*s, h-2*s);
+    sctx.clearRect(2*s, 2*s, w-4*s, h-4*s);
+
+    sctx.fillRect(4*s, 4*s, w/2-4*s-2*s, h-8*s);
+    sctx.clearRect(8*s, 4*s, w/2-14*s, h-12*s);
+
+    sctx.fillRect(w/2+2*s, 4*s, w/2-6*s, h-8*s);
+    sctx.clearRect(w/2+6*s, 8*s, 6*s, 10*s);
+    sctx.clearRect(w/2+6*s, h/2+2*s, 6*s, 10*s);
   }
 
   componentDidMount() {
     this.drawL();
   }
+
+  drawAxesRight(pix) {
+    if (this.state.showCoordinatesRight) {
+      //const left = toJS(this.props.store.app.left);
+      const right = toJS(this.props.store.app.right);
+      const w = this.props.width;
+      const h = this.props.height;
+      let mapcol = Math.round(w * (0 - right.xmin) / (right.xmax - right.xmin));
+      let maprow = h - Math.round(h * (0 - right.ymin) / (right.ymax - right.ymin)) - 1;
+      // Vertical axis
+      let idx;
+      if (mapcol > 0 && mapcol < w) {
+        for (var i = 0; i < h; i++) {
+          idx = 4 * (w * maprow + i);
+          pix.data[idx + 0] = 200;
+          pix.data[idx + 1] = 200;
+          pix.data[idx + 2] = 200;
+          pix.data[idx + 3] = 255;
+        }
+      }
+      // Horizontal axis
+      if (maprow > 0 && maprow < h) {
+        for (var i = 0; i < w; i++) {
+          idx = 4 * (w * i + mapcol);
+          pix.data[idx + 0] = 200;
+          pix.data[idx + 1] = 200;
+          pix.data[idx + 2] = 200;
+          pix.data[idx + 3] = 255;
+        }
+      }
+    }
+  }
+
   componentDidUpdate() {
     // toJS is essential for performance
     const left = toJS(this.props.store.app.left);
@@ -128,6 +171,9 @@ export default class MathFracPad extends Component {
     }
     if (step == 0) {
       dctx.clearRect(0, 0, w, h);
+      var pix = dctx.createImageData(w, h);
+      this.drawAxesRight(pix);
+      dctx.putImageData(pix, 0, 0);
     }
     for (var s = 0; s < step; s++) {
       if (s == 0) {
@@ -139,29 +185,8 @@ export default class MathFracPad extends Component {
       }
       var pix = dctx.createImageData(w, h);
 
-      if (s == step -1 && this.state.showCoordinatesRight) {
-        let mapcol = Math.round(w * (0 - right.xmin) / (right.xmax - right.xmin));
-        let maprow = h - Math.round(h * (0 - right.ymin) / (right.ymax - right.ymin)) - 1;
-        // Vertical axis
-        if (mapcol > 0 && mapcol < w) {
-          for (var i = 0; i < h; i++) {
-            idx = 4 * (w * maprow + i);
-            pix.data[idx + 0] = 33;
-            pix.data[idx + 1] = 33;
-            pix.data[idx + 2] = 33;
-            pix.data[idx + 3] = 255;
-          }
-        }
-        // Horizontal axis
-        if (maprow > 0 && maprow < h) {
-          for (var i = 0; i < w; i++) {
-            idx = 4 * (w * i + mapcol);
-            pix.data[idx + 0] = 33;
-            pix.data[idx + 1] = 33;
-            pix.data[idx + 2] = 33;
-            pix.data[idx + 3] = 255;
-          }
-        }
+      if (s == step - 1 && this.state.showCoordinatesRight) {
+        this.drawAxesRight(pix);
       }
       //let x = orig.xmin;
       //let y = orig.ymax;
@@ -207,6 +232,30 @@ export default class MathFracPad extends Component {
       dctx.putImageData(pix, 0, 0);
     }
   }
+  addRow() {
+    let p = toJS(this.props.store.app.params);
+    p.push({ r: 0.5, s:0.5, th:0, e:0, f:0.5});
+    this.props.store.app.set(p);
+  }
+  removeRow() {
+    let p = toJS(this.props.store.app.params);
+    let r = this.props.store.app.currentRow;
+    p.splice(r, 1);
+    this.props.store.app.set(p);
+  }
+  /*
+
+                <IconButton onClick={()=>app.zoomInLeft()}>
+                  <ZoomIn />
+                </IconButton>
+                <IconButton onClick={()=>app.zoomOutLeft()}>
+                  <ZoomOut />
+                </IconButton>
+                <Tooltip title="Show axes">
+                  <FormControlLabel control={<Checkbox checked={showCoordinatesLeft} onChange={()=>this.setState({ showCoordinatesLeft: !showCoordinatesLeft })} />}
+                    label="Axes:" labelPlacement="start" />
+                </Tooltip>
+*/
   render() {
     const { 
       tool, size, color, fill, fillColor, items, 
@@ -236,13 +285,13 @@ export default class MathFracPad extends Component {
               </div>
               <div style={{textAlign:'center'}}>
                 <Typography variant="caption">
-                  x: [{left.xmin} - {left.xmax}] y: [{left.ymin} - {left.ymax}]
+                  x: [{left.xmin}, {left.xmax}] y: [{left.ymin}, {left.ymax}]
                 </Typography>
               </div>
               <div style={{textAlign:'center'}}>
-                <Tooltip title="Use L' image">
+                <Tooltip title="Use UB image">
                   <IconButton width={20} onClick={()=>this.drawL()}>
-                    L'
+                    UB
                   </IconButton>
                 </Tooltip>
                 <Tooltip title="Clear drawing">
@@ -267,18 +316,8 @@ export default class MathFracPad extends Component {
                 </Tooltip>
 
                 <IconButton>
-                  
                 </IconButton>
-                <IconButton onClick={()=>app.zoomInLeft()}>
-                  <ZoomIn />
-                </IconButton>
-                <IconButton onClick={()=>app.zoomOutLeft()}>
-                  <ZoomOut />
-                </IconButton>
-                <Tooltip title="Show axes">
-                  <FormControlLabel control={<Checkbox checked={showCoordinatesLeft} onChange={()=>this.setState({ showCoordinatesLeft: !showCoordinatesLeft })} />}
-                    label="Axes:" labelPlacement="start" />
-                </Tooltip>
+  
               </div>
             </Grid>
             <Grid item xs={2}>
@@ -313,7 +352,7 @@ export default class MathFracPad extends Component {
               </div>
               <div style={{textAlign:'center'}}>
                 <Typography variant="caption" className={classes.typography}>
-                  x: [{right.xmin} - {right.xmax}] y: [{right.ymin} - {right.ymax}]
+                  x: [{right.xmin}, {right.xmax}] y: [{right.ymin}, {right.ymax}]
                 </Typography>
               </div>
               <div style={{textAlign:'center'}}>
@@ -335,45 +374,38 @@ export default class MathFracPad extends Component {
             </Grid>
           </Grid>
         </Grid>
-        <Grid item xs={6}>
-          <div style={{ textAlign:'center'}}>
-            <form>
-              <FormControl className={classes.formControl}>
-                <InputLabel htmlFor="paramset">Parameters</InputLabel>
-                <Select value={app.name}
-                  onChange={(e)=>{ app.setParams(e.target.value) }}
-                  >
-                  { app.paramsets.map(name => (
-                      <MenuItem value={name}>{name}</MenuItem>
-                    )
-                  )}
-                </Select>
-              </FormControl>
-            </form>
-            <ParamsGrid minHeight={250}/>
+        
+        <Grid item xs={3}>
+          <Grid item xs={12}>
+            <FormControl className={classes.formControl}>
+              <InputLabel htmlFor="paramset">Parameters</InputLabel>
+              <Select value={app.name} onChange={(e)=>{ app.setParams(e.target.value) }}>
+                { app.paramsets.map(name => (<MenuItem value={name}>{name}</MenuItem>))}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12}>
+            <Tooltip title="Show parameters">
+              <Switch checked={this.state.showGrid} onChange={()=>this.setState({ showGrid:!this.state.showGrid })} />  
+            </Tooltip>
+            <Tooltip title="Add row">
+              <IconButton onClick={()=>{this.addRow()}}>
+                <AddIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Remove row">
+              <IconButton onClick={()=>{this.removeRow()}}>
+                <ClearIcon />
+              </IconButton>
+            </Tooltip>
+          </Grid>
+        </Grid>
+        <Grid item xs={9}>
+          <div id="grid">
+          { this.state.showGrid ? <ParamsGrid minHeight={250}/> : null }
           </div>
         </Grid>
       </Grid>
     );
   }
 }
-/*
-              <div className="options" style={{marginBottom:20}}>
-                <label htmlFor="">size: </label>
-                <input min="1" max="20" type="range" value={size} onChange={(e) => this.setState({size: parseInt(e.target.value)})} />
-              </div>
-              <div className="options" style={{marginBottom:20}}>
-                <label htmlFor="">color: </label>
-                <input type="color" value={color} onChange={(e) => this.setState({color: e.target.value})} />
-              </div>
-              {(this.state.tool == TOOL_ELLIPSE || this.state.tool == TOOL_RECTANGLE) ?
-                <div>
-                  <label htmlFor="">fill in:</label>
-                  <input type="checkbox" value={fill} style={{margin:'0 8'}}
-                         onChange={(e) => this.setState({fill: e.target.checked})} />
-                  {fill ? <span>
-                      <label htmlFor="">with color:</label>
-                      <input type="color" value={fillColor} onChange={(e) => this.setState({fillColor: e.target.value})} />
-                    </span> : ''}
-                </div> : ''}
-*/

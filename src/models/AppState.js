@@ -1,6 +1,15 @@
 import { observable, action } from "mobx";
 
-const paramsets = [
+function clone(obj) {
+  if (null == obj || "object" != typeof obj) return obj;
+  var copy = obj.constructor();
+  for (var attr in obj) {
+      if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
+  }
+  return copy;
+}
+
+let paramsets = [
   "Sierpinski Gasket",
   "Sierpinski Carpet",
   "Koch Curve",
@@ -11,13 +20,15 @@ const paramsets = [
   "One Arm Spiral",
   "Two Arm Spiral",
   "Four Arm Spiral 1",
-  "Four Arm Spiral 2"  
+  "Four Arm Spiral 2",
+  "CUSTOM"
 ];
 
-const params = {
+let params = {
   "Sierpinski Gasket": {
     left: { xmin: 0, xmax: 1.0, ymin: 0, ymax: 1.0 },
     right: { xmin: 0, xmax: 1.0, ymin: 0, ymax: 1.0 },
+    touched: false,
     params: [
       { r: 0.5, s:0.5, th:0, e:0, f:0},
       { r: 0.5, s:0.5, th:0, e:0.5, f:0},
@@ -27,6 +38,7 @@ const params = {
   "Sierpinski Carpet": {
     left: { xmin: 0, xmax: 1.0, ymin: 0, ymax: 1.0 },
     right: { xmin: 0, xmax: 1.0, ymin: 0, ymax: 1.0 },
+    touched: false,
     params: [
       { r: 0.3333, s:0.3333, th:0, e:0, f:0},
       { r: 0.3333, s:0.3333, th:0, e:0.333, f:0},
@@ -41,6 +53,7 @@ const params = {
   "Koch Curve": {
     left: { xmin: 0, xmax: 1.0, ymin: 0, ymax: 1.0 },
     right: { xmin: 0, xmax: 1.0, ymin: 0, ymax: 1.0 },
+    touched: false,
     params: [
       { r: 0.3333, s:0.3333, th:0, e:0, f:0},
       { r: 0.3333, s:0.3333, th:60, e:0.333, f:0},
@@ -51,6 +64,7 @@ const params = {
   "Queen Anne's Lace": {
     left: { xmin: 0, xmax: 1.0, ymin: 0, ymax: 1.0 },
     right: { xmin: -2.0, xmax: 2.0, ymin: -2.0, ymax: 2.0 },
+    touched: false,
     params: [
       { r: 0.27, s:0.27, th:0, e:1, f:0},
       { r: 0.27, s:0.27, th:0, e:0.707, f:0.707},
@@ -66,6 +80,7 @@ const params = {
   "Barnsley's Fern": { 
     left: { xmin: 0, xmax: 1.0, ymin: 0, ymax: 1.0 },
     right: { xmin: -5, xmax: 5, ymin: 0, ymax: 10 },
+    touched: false,
     params: [
       { r: 0.0, s:0.16, th:0, e:0, f:0},
       { r: 0.85, s:0.85, th:-2.5, e:0, f:1.6},
@@ -76,6 +91,7 @@ const params = {
   "Tree": { 
     left: { xmin: 0, xmax: 1.0, ymin: 0, ymax: 1.0 },
     right: { xmin: -1.25, xmax: 1.25, ymin: -0.25, ymax: 2.25 },
+    touched: false,
     params: [
       { r: 0.05, s:0.6, th:0, e:0, f:0},
       { r: 0.05, s:-0.5, th:0, e:0, f:1},
@@ -88,6 +104,7 @@ const params = {
   "Showflake": {
     left: { xmin: 0, xmax: 1.0, ymin: 0, ymax: 1.0 },
     right: { xmin: -1, xmax: 1.0, ymin:-1, ymax: 1.0 },
+    touched: false,
     params: [
       { r: 0.6, s:0.6, th:0, e:0, f:0},
       { r: 0.4, s:0.2, th:0, e:0.6, f:0},
@@ -97,6 +114,7 @@ const params = {
   "One Arm Spiral": {
     left: { xmin: 0, xmax: 1.0, ymin: 0, ymax: 1.0 },
     right: { xmin: -1, xmax: 1.0, ymin: -1, ymax: 1.0 },
+    touched: false,
     params: [
       { r: 0.29, s:0.29, th:0, e:0.71, f:0.41},
       { r: 0.84, s:0.84, th:20, e:0, f:0}
@@ -105,6 +123,7 @@ const params = {
   "Two Arm Spiral": {
     left: { xmin: 0, xmax: 1.0, ymin: 0, ymax: 1.0 },
     right: { xmin: -1, xmax: 1.0, ymin: -1, ymax: 1.0 },
+    touched: false,
     params: [
       { r: 0.2, s:0.2, th:0, e:0.7, f:0},
       { r: 0.2, s:0.2, th:0, e:-0.7, f:0},
@@ -114,6 +133,7 @@ const params = {
   "Four Arm Spiral 1": {
     left: { xmin: 0, xmax: 1.0, ymin: 0, ymax: 1.0 },
     right: { xmin: -1, xmax: 1.0, ymin: -1, ymax: 1.0 },
+    touched: false,
     params: [
       { r: 0.2, s:0.2, th:0, e:0.7, f:0},
       { r: 0.2, s:0.2, th:0, e:-0.7, f:0},
@@ -125,12 +145,23 @@ const params = {
   "Four Arm Spiral 2": {
     left: { xmin: 0, xmax: 1.0, ymin: 0, ymax: 1.0 },
     right: { xmin: -1, xmax: 1.0, ymin: -1, ymax: 1.0 },
+    touched: false,
     params: [
       { r: 0.1, s:0.1, th:0, e:0.75, f:0.75},
       { r: 0.1, s:0.1, th:0, e:-0.75, f:0.75},
       { r: 0.1, s:0.1, th:0, e:-0.75, f:-0.75},
       { r: 0.1, s:0.1, th:0, e:0.75, f:-0.75},
       { r: 0.95, s:0.96, th:10, e:0, f:0}
+    ]
+  },
+  "CUSTOM": {
+    left: { xmin: 0, xmax: 1.0, ymin: 0, ymax: 1.0 },
+    right: { xmin: 0, xmax: 1.0, ymin: 0, ymax: 1.0 },
+    touched: true,
+    params: [
+      { r: 0.5, s:0.5, th:0, e:0, f:0},
+      { r: 0.5, s:0.5, th:0, e:0.5, f:0},
+      { r: 0.5, s:0.5, th:0, e:0, f:0.5}
     ]
   }
 };
@@ -141,21 +172,29 @@ export default class AppState {
   @observable right;  // coordinates on right
   @observable params; // current parameters
   @observable name;   // name of parameter set
+  @observable touched; // edited?
   @observable step;   // iteration step
+  @observable currentRow;
   constructor() {
     let defaultset = params[paramsets[0]];
     this.left = defaultset.left;
     this.right = defaultset.right;
     this.params = defaultset.params;
     this.name = paramsets[0];
+    this.touched = false;
     this.step = 0;
+    this.currentRow = 0;
   }
   @action setParams(key) {
     this.name = key;
     this.left = params[key].left;
     this.right = params[key].right;
     this.params = params[key].params;
+    this.touched = params[key].touched;
     //this.step = 0;
+  }
+  @action setCurrentRow(r) {
+    this.currentRow = r;
   }
   @action forward() {
     this.step = this.step + 1;
@@ -169,7 +208,25 @@ export default class AppState {
     this.step = 0;
   }
   @action set(p) {
-    this.params = p;
+    // Touched param sets are edited in place (point to params[...])
+    // An untouched param set has to be copied on write
+    if (!this.touched) {
+      let x = {
+        left: clone(this.left),
+        right: clone(this.right),
+        params: clone(p),
+        touched: true
+      };
+      this.name = "CUSTOM ("+this.name+")";
+      this.touched = true;
+      paramsets.push(this.name);
+      this.paramsets = paramsets;
+      params[this.name] = x;
+      this.params = x.params;
+    } else {
+      this.params = p;
+      params[this.name].params = p;
+    }
   }
   @action zoomInLeft() {
     this.left.xmin += 0.25;

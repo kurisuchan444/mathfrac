@@ -13,6 +13,7 @@
     "distclean": "rm dist/*; rm -rf node_modules; rm package-lock.json",
     "web": "pushd dist; python -m http.server; popd",
     "php": "pushd dist; php -S 192.168.1.126:8000; popd",
+    "php1": "pushd dist; php -S localhost:8000; popd",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

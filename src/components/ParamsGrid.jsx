@@ -3,7 +3,7 @@ import { observer, inject } from "mobx-react";
 import { toJS } from "mobx";
 //import { withStyles } from '@material-ui/core/styles';
 import ReactDataGrid from 'react-data-grid';
-
+import "../style.css";
 //const styles = theme => ({
 //  root: {
 //    flexGrow: 1,
@@ -36,6 +36,9 @@ export default class ParamsGrid extends Component {
     }
     this.props.store.app.set(p);
   };
+  handleRowSelect = (a) => {
+    this.props.store.app.setCurrentRow(a.rowIdx);
+  };
   render() {
     //const { classes } = this.props;
     // minHeight={this.props.minHeight}
@@ -47,6 +50,7 @@ export default class ParamsGrid extends Component {
         rowGetter={this.rowGetter}
         rowsCount={params.length}
         onGridRowsUpdated={this.handleGridRowsUpdated}
+        onCellSelected={this.handleRowSelect}
         minWidth={515}  />
     );
   }

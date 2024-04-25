@@ -4,11 +4,13 @@ Follows https://www.robinwieruch.de/minimal-react-webpack-babel-setup/
 except for babel itself, where I followed instructions from the babel website.
 
 Use this boilerplate:
-- cd boilerplate
+- mkdir mathfrac
+- https://github.com/kurisuchan444/mathfrac.git
+- cd mathfrac
 - npm install
 - npm start
 
-Key ingredients:
+Key ingredients (not the latest versions...)
 - Webpack 4 dev and prod
 - React 16
 - Babel (loader: 8, babel: 7)
@@ -24,16 +26,3 @@ Running (without node support):
 - npm run web [Run minimal web server on dist]
 - npm run php [Run php server]
 
-TODO
-=============================
-[X] Initial picture (L')
-[X] Restore L'
-[X] Show axes (switch) in gray - right
-[X] Show every transform in a different color (as a switch)
-[ ] "Custom" setup
-[ ] If you edit a set, it becomes Custom (based on Tree)
-[ ] Add a row in table, copy a row, remove a row
-[ ] Show axes (switch) in gray - left
-[ ] Respect colors, allow colors
-[ ] Save to PNG
-[ ] Print
